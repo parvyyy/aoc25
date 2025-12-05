@@ -139,12 +139,93 @@ const Part1 = (data: string) => {
     return total
 }
 
+// Traverse through the BST, counting the size of the range.
+// Will need to consider children whose end surpasses the 
+// start of the parent.
+const Part2 = (data: string) => {
+const [range_data, ingredients] = data.split('\n\n')
+
+    if (!range_data || !ingredients) {
+        return 0
+    }
+
+    const ranges = range_data.split('\n')
+
+    let root = null
+
+    // Helper function to display the tree
+    const display = (root: RangeNode | null, level: number = 0) => {
+        if (root === null) {
+            return
+        }
+
+        // In order traversal.
+        display(root.right, level + 1)
+        console.log(`${'\t'.repeat(level)}${root.start} - ${root.end}`)
+        display(root.left, level + 1)
+
+    }
+
+    // Inserts a given start-end range into the BST.
+    const insert = (root: RangeNode | null, start: number, end: number) => {
+        if (root === null) {
+            return new RangeNode(start, end)
+        }
+
+        // Remove the changing of the rnage directly as this results in double counting.
+        // Instead, allow the extra regions to be broken up into their own nodes.
+        if (start < root.start) {
+            // When adding children, we remove overlapping regions.
+            root.left = insert(root.left, start, Math.min(root.start - 1, end))
+        } 
+
+        if (end > root.end) {
+            // When adding children, we remove overlapping regions.
+            root.right = insert(root.right, Math.max(root.end + 1, start), end)
+        }
+
+        return root
+    }
+
+    // Populates BST
+    for (const range of ranges) {
+        const [start, end] = range.split('-').map(Number)
+
+        if (!start || !end) {
+            return 0
+        }        
+        
+        root = insert(root, start, end)
+    }
+
+    // Helper function to sum the ranges of each interval. Relies on the changes
+    // performed to ``insert`` to remove duplicate ranges.
+    const sumRanges = (root: RangeNode | null) : number => {
+        if (root === null) {
+            return 0
+        }
+
+        let curr = (root.end - root.start + 1)
+        
+        const l_sum = sumRanges(root.left)
+        const r_sum = sumRanges(root.right)
+
+        // console.log(`For node ${root.start} ${root.end} - S: ${curr} L: ${l_sum} R: ${r_sum}`)
+
+        return curr + l_sum + r_sum
+    }
+
+    const total = sumRanges(root)
+
+    return total
+}
+
 const data = await getData()
 
 // ans1: 868
 const ans1 = Part1(data)
 console.log(ans1)
 
-// // ans2: 171039099596062
-// const ans2 = Part2(data)
-// console.log(ans2)
+// ans2: 171039099596062
+const ans2 = Part2(data)
+console.log(ans2)
