@@ -1,6 +1,4 @@
-import { writeFileSync } from "node:fs"
 import fs from "node:fs/promises"
-import { exit } from "node:process"
 
 const getData = async () => {
     const data = fs.readFile("input.txt", {
@@ -149,8 +147,6 @@ const Part2Naive = (data: string) => {
     const points = data.split('\n').map(l => l.split(',').map(Number) as Vec2)
     const n = points.reduce((s, c) => Math.max(s, c[1]), 0) // rows
     const m = points.reduce((s, c) => Math.max(s, c[0]), 0) // cols
-
-    console.log(n, m)
 
     const grid: string[][] = Array.from({ length: n + 1 }, () => Array(m).fill("."))
 
