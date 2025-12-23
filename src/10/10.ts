@@ -1,4 +1,5 @@
 import fs from "node:fs/promises"
+import { Matrix } from 'ml-matrix'
 
 const getData = async () => {
     const data = fs.readFile("input.txt", {
@@ -157,8 +158,7 @@ const Part1 = (data: string) => {
 
     let total = 0
     for (const machine of machines) {
-        const steps = configurePart2(machine)
-        console.log(`Steps: ${steps}`)
+        const steps = configure(machine)
 
         total += steps
     }
@@ -166,11 +166,66 @@ const Part1 = (data: string) => {
     return total
 }
 
+const Part2 = (data: string) => {
+    /*
+        As per, https://www.reddit.com/r/adventofcode/comments/1pl8nsa/2025_day_10_part_2_is_this_even_possible_without/
+        i.e. (3) (1,3) (2) (2,3) (0,2) (0,1) {3,5,4,7}
+        Let x_i denote the number of clicks for the ith button.
+
+        {3} = x_4 + x_5
+        {5} = x_1 + x_5
+        {4} = x_2 + x_3 + x_4
+        {7} = x_0 + x_1 + x_3
+
+        Then, we perform Gaussian Elimination (https://en.wikipedia.org/wiki/Gaussian_elimination) to retrieve 
+
+        x_0 = 2 - x_3 + x_5
+        x_1 = 5 - x_5
+        x_2 = 1 - x_3 + x_5
+        x_4 = 3 - x_5
+
+        with two free variables x_3, x_5 which can be computed through brute force -- likely low.
+    */
+
+    // TODO: Research https://www.npmjs.com/package/na-gaussian-elimination
+
+    const augmented = new Matrix([
+        [0, 0, 0, 0, 1, 1, 3],
+        [0, 1, 0, 0, 0, 1, 5],
+        [0, 0, 1, 1, 1, 0, 4],
+        [1, 1, 0, 1, 0, 0, 7],
+    ]);
+
+    console.log(augmented.reducedEchelonForm())
+
+    /*
+    Matrix {
+            x0       x1       x2       x3       x4      x5        B
+        [
+            1        0        0        1        0       -1        2      
+            0        1        0        0        0        1        5      
+            0        0        1        1        0       -1        1      
+            0        0        0        0        1        1        3      
+        ]
+        rows: 4
+        columns: 7
+    }
+
+    The free variables (x_3 & x_5) are the cols. in which there is no leading 0.
+    All rows can be written in equations in terms of these!
+
+    */
+
+}
+
+
+
+
 const data = await getData()
 
 // ans1: 
 const ans1 = Part1(data)
 console.log(ans1)
 
-// const ans2 = Part2(data)
-// console.log(ans2)
+const ans2 = Part2(data)
+console.log(ans2)
